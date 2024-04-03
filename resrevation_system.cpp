@@ -9,7 +9,7 @@ using namespace std;
 #define SEATS_PER_TRAIN 500
 #define NUM_THREADS 20
 #define MAX_QUERIES 5
-#define SIMULATION_TIME 1
+#define SIMULATION_TIME 10
 
 pthread_mutex_t consoleMutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -105,14 +105,14 @@ void add_read_entry(int trainID) {
     while ((a = activeQueries) >= MAX_QUERIES || (p = get_write_entry(trainID))) {
         ts = get_current_time();
         if (a >= MAX_QUERIES) {
-            print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : SUSPENDED - MAX_QUERIES reached\n\n");
+            print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : SUSPENDED - MAX_QUERIES reached\n\n");
         }
         else {
-            print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : SUSPENDED - write entry for train " + to_string(trainID) + " found\n\n");
+            print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : SUSPENDED - write entry for train " + to_string(trainID) + " found\n\n");
         }
         pthread_cond_wait(&readPossible[trainID], &tableMutex);
         ts = get_current_time();
-        print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : RESUMING - signal received\n\n");
+        print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : RESUMING - signal received\n\n");
     }
 
     activeQueries++;
@@ -128,7 +128,7 @@ void add_read_entry(int trainID) {
         p->numOfThreads += 1;
     }
     ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : read entry made\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : read entry made\n\n");
 
     pthread_mutex_unlock(&tableMutex);
 }
@@ -141,12 +141,12 @@ void remove_read_entry(int trainID) {
     if (p->numOfThreads == 0) {
         p->trainID = -1;
         ts = get_current_time();
-        print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Last read entry removed. waking up all the threads waiting to write train " + to_string(trainID) + "\n\n");
+        print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Last read entry removed. waking up all the threads waiting to write train " + to_string(trainID) + "\n\n");
         pthread_cond_broadcast(&writePossible[trainID]);
     }
     else {
         ts = get_current_time();
-        print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : read entry removed\n\n");
+        print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : read entry removed\n\n");
     }
 
     activeQueries -= 1;
@@ -157,20 +157,20 @@ void remove_read_entry(int trainID) {
 
 int enquire(int trainID) {
     struct timespec ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to make a read entry in shared table\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Attempting to make a read entry in shared table\n\n");
 
     add_read_entry(trainID);
 
     int availableSeats = trainSeats[trainID];
 
     ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : available seats for the train " + to_string(trainID) + " = " + to_string(availableSeats) + "\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : available seats for the train " + to_string(trainID) + " = " + to_string(availableSeats) + "\n\n");
 
     struct timespec ts2 = {0, 100000000};
     nanosleep(&ts2, NULL);
 
     ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to remove a read entry in shared table\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Attempting to remove a read entry in shared table\n\n");
 
     remove_read_entry(trainID);
 
@@ -185,17 +185,17 @@ void add_write_entry(int trainID) {
     while ((a = activeQueries) >= MAX_QUERIES || (p1 = get_read_entry(trainID)) || (p2 = get_write_entry(trainID))) {
         ts = get_current_time();
         if (a >= MAX_QUERIES) {
-            print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : SUSPENDED - MAX_QUERIES reached\n\n");
+            print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : SUSPENDED - MAX_QUERIES reached\n\n");
         }
         else if (p1) {
-            print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : SUSPENDED - read entry for train " + to_string(trainID) + " found\n\n");
+            print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : SUSPENDED - read entry for train " + to_string(trainID) + " found\n\n");
         }
         else {
-            print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : SUSPENDED - write entry for train " + to_string(trainID) + " found\n\n");
+            print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : SUSPENDED - write entry for train " + to_string(trainID) + " found\n\n");
         }
         pthread_cond_wait(&writePossible[trainID], &tableMutex);
         ts = get_current_time();
-        print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : RESUMING - signal received\n\n");
+        print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : RESUMING - signal received\n\n");
     }
     activeQueries++;
 
@@ -205,7 +205,7 @@ void add_write_entry(int trainID) {
     p->numOfThreads = 1;
 
     ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Write entry made\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Write entry made\n\n");
 
     pthread_mutex_unlock(&tableMutex);
 }
@@ -217,7 +217,7 @@ void remove_write_entry(int trainID) {
     p->trainID = -1;
     activeQueries--;
     ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Write entry removed. waking up all the threads waiting to read/write train " + to_string(trainID) + "\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Write entry removed. waking up all the threads waiting to read/write train " + to_string(trainID) + "\n\n");
     pthread_cond_broadcast(&readPossible[trainID]);
     pthread_cond_broadcast(&writePossible[trainID]);
     signal_free_cond();
@@ -226,7 +226,7 @@ void remove_write_entry(int trainID) {
 
 int book(int trainID, int k) {
     struct timespec ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to make a write entry in shared table\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Attempting to make a write entry in shared table\n\n");
 
     add_write_entry(trainID);
 
@@ -240,10 +240,10 @@ int book(int trainID, int k) {
     trainSeats[trainID] -= booked;
 
     ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : booked " + to_string(booked) + " seats for the train " + to_string(trainID) + "\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : booked " + to_string(booked) + " seats for the train " + to_string(trainID) + "\n\n");
 
     ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to remove a write entry in shared table\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Attempting to remove a write entry in shared table\n\n");
 
     remove_write_entry(trainID);
 
@@ -252,7 +252,7 @@ int book(int trainID, int k) {
 
 void cancel(int trainID, int k) {
     struct timespec ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to make a write entry in shared table\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Attempting to make a write entry in shared table\n\n");
 
     add_write_entry(trainID);
 
@@ -261,10 +261,10 @@ void cancel(int trainID, int k) {
 
     trainSeats[trainID] += k;
     ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : cancelled " + to_string(k) + " seats for the train " + to_string(trainID) + "\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : cancelled " + to_string(k) + " seats for the train " + to_string(trainID) + "\n\n");
 
     ts = get_current_time();
-    print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to remove a write entry in shared table\n\n");
+    print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Attempting to remove a write entry in shared table\n\n");
 
     remove_write_entry(trainID);
 }
@@ -289,14 +289,18 @@ void* worker(void* arg) {
         }
         pthread_mutex_unlock(&exitMutex);
 
+        // Introduce a delay of 25 milliseconds before sending each query
+        ts = {0, 25000000}; // 25 milliseconds in nanoseconds
+        nanosleep(&ts, NULL);
+
         int q = queryDis(gen);
         if (q == 1) {
             int trainToQuery = trainDis(gen);
             ts = get_current_time();
-            print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to enquire train " + to_string(trainToQuery) + "\n\n");
+            print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Attempting to enquire train " + to_string(trainToQuery) + "\n\n");
             int available = enquire(trainToQuery);
             ts = get_current_time();
-            print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Available seats in train " + to_string(trainToQuery) + " = " + to_string(available) + "\n\n");
+            print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Available seats in train " + to_string(trainToQuery) + " = " + to_string(available) + "\n\n");
         }
         else if (q == 2) {
             int trainToBook = trainDis(gen);
@@ -305,7 +309,7 @@ void* worker(void* arg) {
                 numSeats = 5; // Ensure at least 5 tickets are booked
             }
             ts = get_current_time();
-            print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to book " + to_string(numSeats) + " seats in train " + to_string(trainToBook) + "\n\n");
+            print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Attempting to book " + to_string(numSeats) + " seats in train " + to_string(trainToBook) + "\n\n");
             int booked = book(trainToBook, numSeats);
             bookings.push_back({trainToBook, booked});
         }
@@ -320,7 +324,7 @@ void* worker(void* arg) {
             // Use seatDis for both booking and cancellation
             int numSeats = seatDis(gen);
             ts = get_current_time();
-            print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to cancel " + to_string(numSeats) + " seats in train " + to_string(trainToCancel) + "\n\n");
+            print_output(to_string(ts.tv_sec) + " min, " + to_string(ts.tv_nsec%60) + " s : Attempting to cancel " + to_string(numSeats) + " seats in train " + to_string(trainToCancel) + "\n\n");
             cancel(trainToCancel, numSeats);
         }
     }
@@ -372,6 +376,9 @@ int main() {
     for (int i = 0; i < NUM_THREADS; i++) {
         threadIDs[i] = i;
         pthread_create(&threads[i], NULL, worker, (void*) &threadIDs[i]);
+        // Introduce a delay of 25 milliseconds between creating threads
+        struct timespec ts = {0, 25000000}; // 25 milliseconds in nanoseconds
+        nanosleep(&ts, NULL);
     }
 
     signal(SIGALRM, timer_handler);
