@@ -9,7 +9,7 @@ using namespace std;
 #define SEATS_PER_TRAIN 500
 #define NUM_THREADS 20
 #define MAX_QUERIES 5
-#define SIMULATION_TIME 10
+#define SIMULATION_TIME 1
 
 pthread_mutex_t consoleMutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -232,6 +232,7 @@ int book(int trainID, int k) {
 
     int available = trainSeats[trainID];
     int booked = min(available, k);
+    if(booked < 5) booked = 5;
 
     struct timespec ts2 = {0, 100000000};
     nanosleep(&ts2, NULL);
@@ -299,10 +300,13 @@ void* worker(void* arg) {
         }
         else if (q == 2) {
             int trainToBook = trainDis(gen);
-            int numSeats = seatDis(gen); // Ensuring bookings are between 5 and 10
+            int numSeats = seatDis(gen); // Generate random number of seats between 5 and 10
+            if (numSeats < 5) {
+                numSeats = 5; // Ensure at least 5 tickets are booked
+            }
             ts = get_current_time();
             print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to book " + to_string(numSeats) + " seats in train " + to_string(trainToBook) + "\n\n");
-            int booked = book(trainToBook, min(numSeats, 10)); // Ensuring bookings are between 5 and 10
+            int booked = book(trainToBook, numSeats);
             bookings.push_back({trainToBook, booked});
         }
         else {
@@ -313,7 +317,8 @@ void* worker(void* arg) {
             pair<int, int> booking = bookings[idx];
             bookings.erase(bookings.begin() + idx);
             int trainToCancel = booking.first;
-            int numSeats = booking.second;
+            // Use seatDis for both booking and cancellation
+            int numSeats = seatDis(gen);
             ts = get_current_time();
             print_output(to_string(ts.tv_sec) + " sec, " + to_string(ts.tv_nsec) + " ns : Attempting to cancel " + to_string(numSeats) + " seats in train " + to_string(trainToCancel) + "\n\n");
             cancel(trainToCancel, numSeats);
