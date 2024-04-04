@@ -62,7 +62,7 @@ Stores information about active queries.
 An array representing the available seats for each train.
 
 
-#Functions:
+## Functions:
 
 ## getNewEntry(int trainID, int qtype, int n):
 Creates a new tabEntry with the given parameters.
