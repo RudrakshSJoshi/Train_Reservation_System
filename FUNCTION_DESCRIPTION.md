@@ -46,8 +46,9 @@ Terminates the calling thread and returns a value.
 This function is typically called when the thread has finished its work and needs to exit.
 
 
-#Explanation of Code Functions:
-#Data Structures Used:
+# Explanation of Code Functions:
+
+## Data Structures Used:
 
 ## tabEntry:
 Represents an entry in the shared table.
