@@ -9,7 +9,7 @@ using namespace std;
 #define SEATS_PER_TRAIN 500
 #define NUM_THREADS 20
 #define MAX_QUERIES 5
-#define SIMULATION_TIME 10
+#define SIMULATION_TIME 1
 
 pthread_mutex_t consoleMutex = PTHREAD_MUTEX_INITIALIZER;
 
