@@ -61,12 +61,12 @@ an appropriate barrier in order to synchronize the master thread with the termin
 ---
 
 Typical values of the parameters that your program should handle are:
-- t = the number of trains = 100
-- c = the capacity of each train = 500
-- k = the number of tickets booked in a query of type 2 = A random integer in the range 5–10
-- s = the number of worker threads = 20
-- MAX = the maximum number of concurrent active queries = 5
-- T = the total running time = 1 – 10 minute(s)
+- `t`: Number of trains (default: 100)
+- `c`: Capacity of each train (default: 500)
+- `k`: Number of tickets booked in a query (random integer between 5 and 10)
+- `s`: Number of worker threads (default: 20)
+- `MAX`: Maximum number of concurrent active queries (default: 5)
+- `T`: Total running time (1 to 10 minutes)
 
 ---
 
